@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Tool Detection - VisionAI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.45 9L12 4.33 20.55 9 12 13.67 3.45 9zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon classroom-icon">
+          <!-- Graduation Cap / Education Icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Classroom Tool Detection</h1>
+          <p class="subtitle">AI-Powered Visual Recognition for Classroom Essentials</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div id="model-status-badge" class="status-badge badge-loading">
+          <span class="status-dot"></span>
+          <span id="model-status-text">Initializing Classroom AI...</span>
+        </div>
+        <button id="btn-reload-model" class="btn btn-ghost btn-sm" title="Reload classroom AI model">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Reload Model
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Classroom Target Tools Showcase Bar -->
+    <section class="classroom-tools-bar card">
+      <div class="tools-bar-header">
+        <div class="tools-bar-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+          <span>Target Classroom Tools</span>
+        </div>
+        <span class="tools-bar-hint">Show any of these tools to the camera or upload an image to identify</span>
+      </div>
+
+      <div class="tools-grid">
+        <!-- Tool 1: Pen -->
+        <div id="tool-card-Pen" class="tool-card">
+          <div class="tool-icon-wrapper tool-pen">
+            <span class="tool-emoji">🖊️</span>
+          </div>
+          <div class="tool-meta">
+            <h3 class="tool-name">Pen</h3>
+            <span class="tool-category">Writing Instrument</span>
+          </div>
+          <div class="tool-prob-badge" id="tool-badge-Pen">0%</div>
+        </div>
+
+        <!-- Tool 2: Book -->
+        <div id="tool-card-Book" class="tool-card">
+          <div class="tool-icon-wrapper tool-book">
+            <span class="tool-emoji">📖</span>
+          </div>
+          <div class="tool-meta">
+            <h3 class="tool-name">Book</h3>
+            <span class="tool-category">Textbook / Notebook</span>
+          </div>
+          <div class="tool-prob-badge" id="tool-badge-Book">0%</div>
+        </div>
+
+        <!-- Tool 3: Duster -->
+        <div id="tool-card-Duster" class="tool-card">
+          <div class="tool-icon-wrapper tool-duster">
+            <span class="tool-emoji">🧹</span>
+          </div>
+          <div class="tool-meta">
+            <h3 class="tool-name">Duster</h3>
+            <span class="tool-category">Board Cleaner</span>
+          </div>
+          <div class="tool-prob-badge" id="tool-badge-Duster">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notification Bar -->
+    <div id="notification-bar" class="notification-bar" style="display:none;"></div>
+
+    <!-- Main Workspace (Left: Input Feed | Right: Output Predictions) -->
+    <div class="workspace-grid">
+
+      <!-- LEFT COLUMN: Input Mode (Webcam or Image File) -->
+      <section class="card input-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <h2>Classroom Tool Feed</h2>
+          </div>
+          <div class="source-mode-toggle">
+            <button id="mode-webcam-btn" class="mode-btn active" title="Use Live Classroom Camera">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              </svg>
+              Live Camera
+            </button>
+            <button id="mode-image-btn" class="mode-btn" title="Upload Tool Photo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              Upload Photo
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- WEBCAM VIEW -->
+          <div id="webcam-view-panel" class="view-panel active">
+            <div class="viewport-wrapper">
+              <div id="webcam-container" class="media-container">
+                <!-- Fallback placeholder before camera starts -->
+                <div id="webcam-placeholder" class="feed-placeholder">
+                  <div class="placeholder-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                  </div>
+                  <p class="placeholder-title">Camera Inactive</p>
+                  <p class="placeholder-desc">Click "Start Camera" below and hold up a pen, book, or duster.</p>
+                </div>
+              </div>
+
+              <!-- Live HUD overlays -->
+              <div id="webcam-hud" class="hud-overlay" style="display:none;">
+                <div class="hud-top">
+                  <span class="hud-pill hud-live">
+                    <span class="live-blink"></span> LIVE FEED
+                  </span>
+                  <span id="hud-fps" class="hud-pill">0 FPS</span>
+                  <span id="hud-latency" class="hud-pill">0 ms</span>
+                </div>
+                <div class="hud-scanline"></div>
+                <div class="hud-bottom-tip">
+                  <span>Keep tool centered in good lighting</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Webcam Controls Toolbar -->
+            <div class="viewport-toolbar">
+              <div class="toolbar-left">
+                <button id="btn-start-webcam" class="btn btn-success" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>Start Camera</span>
+                </button>
+                <button id="btn-pause-webcam" class="btn btn-secondary" style="display:none;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                  <span>Pause</span>
+                </button>
+                <button id="btn-stop-webcam" class="btn btn-danger" style="display:none;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  </svg>
+                  <span>Stop</span>
+                </button>
+              </div>
+
+              <div class="toolbar-right">
+                <label class="toggle-control" title="Mirror video horizontally">
+                  <input type="checkbox" id="check-flip-webcam" checked />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Mirror</span>
+                </label>
+                <button id="btn-snapshot" class="btn btn-ghost btn-sm" title="Capture current frame" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  Snapshot
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATIC IMAGE VIEW -->
+          <div id="image-view-panel" class="view-panel">
+            <div 
+              id="image-dropzone" 
+              class="image-dropzone"
+              tabindex="0"
+              role="region"
+              aria-label="Classroom tool image dropzone"
+            >
+              <input type="file" id="image-file-input" accept="image/*" style="display:none;" />
+              
+              <div id="dropzone-content" class="dropzone-prompt">
+                <div class="placeholder-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <p class="placeholder-title">Drop a classroom tool photo here</p>
+                <p class="placeholder-desc">or click anywhere to browse, or paste an image from clipboard (Ctrl+V / Cmd+V)</p>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('image-file-input').click()">
+                  Select Tool Photo
+                </button>
+              </div>
+
+              <!-- Image Display -->
+              <div id="image-preview-wrapper" class="image-preview-wrapper" style="display:none;">
+                <img id="image-preview" alt="Classroom tool preview" crossorigin="anonymous" />
+                <button id="btn-remove-image" class="btn-remove-overlay" title="Clear photo">&times;</button>
+              </div>
+            </div>
+
+            <!-- Image Actions Toolbar -->
+            <div class="viewport-toolbar">
+              <div class="toolbar-left">
+                <button id="btn-classify-image" class="btn btn-primary" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>Identify Tool</span>
+                </button>
+              </div>
+              <div class="toolbar-right">
+                <label class="toggle-control">
+                  <input type="checkbox" id="check-auto-classify" checked />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Auto Identify</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Predictions & Real-Time Stats -->
+      <section class="card results-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <h2>Detection Results</h2>
+          </div>
+          <div class="header-tools">
+            <button id="btn-voice-toggle" class="btn-icon" title="Toggle audio announcements for detected tools" aria-label="Toggle voice announcement">
+              <svg id="icon-voice-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+              <svg id="icon-voice-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- HERO TOP PREDICTION -->
+          <div id="top-prediction-card" class="top-prediction-card">
+            <div class="top-prediction-header">
+              <span class="prediction-tag">DETECTED CLASSROOM TOOL</span>
+              <span id="top-confidence-badge" class="confidence-badge">-</span>
+            </div>
+            <div class="top-class-display">
+              <span id="top-tool-icon" class="top-tool-emoji">🔍</span>
+              <h3 id="top-class-name">Awaiting Classroom Feed...</h3>
+            </div>
+            <div class="confidence-meter-bar">
+              <div id="top-confidence-fill" class="confidence-meter-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- ALL TOOLS BREAKDOWN -->
+          <div class="section-divider">
+            <span>Tool Probability Breakdown</span>
+          </div>
+
+          <div id="predictions-container" class="predictions-list">
+            <!-- Dynamically populated rows for Pen, Book, Duster -->
+            <div class="empty-state">
+              <p>Initializing classroom model...</p>
+            </div>
+          </div>
+
+          <!-- INFERENCE CONTROLS -->
+          <div class="inference-options">
+            <div class="option-row">
+              <label for="range-threshold">Confidence Filter</label>
+              <span id="val-threshold" class="option-val">0%</span>
+            </div>
+            <input 
+              type="range" 
+              id="range-threshold" 
+              min="0" 
+              max="95" 
+              value="0" 
+              step="5" 
+              class="range-slider"
+            />
+          </div>
+
+          <!-- RECENT SNAPSHOTS -->
+          <div class="history-section">
+            <div class="history-header">
+              <span class="history-title">Snapshot Gallery</span>
+              <button id="btn-clear-history" class="btn btn-ghost btn-xs" style="display:none;">Clear</button>
+            </div>
+            <div id="history-container" class="history-grid">
+              <p class="history-empty">Snapshots of classroom tools will appear here.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>
+        Classroom Tool AI &bull; Trained for <strong>Pen</strong>, <strong>Book</strong>, and <strong>Duster</strong> detection.
+      </p>
+      <p class="footer-tip">
+        Powered by TensorFlow.js &amp; Teachable Machine.
+      </p>
+    </div>
+  </footer>
+
+  <!-- TENSORFLOW & TEACHABLE MACHINE LIBRARIES (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+
+  <!-- APPLICATION SCRIPT -->
+  <script src="js/app.js"></script>
+</body>
+</html>

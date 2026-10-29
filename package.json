@@ -1,0 +1,20 @@
+{
+  "name": "teachable-machine-image-classifier",
+  "version": "1.0.0",
+  "description": "Modern web application to host and run Teachable Machine image recognition models",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "teachable-machine",
+    "tensorflow-js",
+    "image-recognition",
+    "machine-learning",
+    "webcam"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
